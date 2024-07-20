@@ -17,25 +17,28 @@ const orderSchema = mongoose.Schema({
         required:true
     },
     deliveryDate:{
-        tyep:Date,
+        type:Date,
         required:true
     },
     shippingAddress:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"addresses"
     },
+    orderStatus : {
+        type:String,
+    },
     paymentDetails:{
         paymentMethod:{
-            type:string
+            type:String
         },
         transactionId:{
-            type:string
+            type:String
         },
         paymentId:{
-            type:string
+            type:String
         },
         paymentStatus:{
-            type:string,
+            type:String,
             default:"PENDING"
         },
         totalPrice:{
@@ -48,12 +51,12 @@ const orderSchema = mongoose.Schema({
             required:true,
             
         },
-        discounte:{
+        discount:{
             type:Number,
             required:true,
             
         },
-        totalItem:{
+        totalItems:{
             type:Number,
             required:true,
             

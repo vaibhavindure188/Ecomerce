@@ -1,15 +1,19 @@
 
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from '@heroicons/react/20/solid'
 import ProductCard from './ProductCard'
 import Mens_kurta from '../homeSectionCorousel/Data'
 import FilterListIcon from '@mui/icons-material/FilterList';
-import {useLocation,  useNavigate,  useNavigation} from 'react-router-dom'
+import {useLocation,  useNavigate,  useNavigation, useParams} from 'react-router-dom'
+import {useDispatch, useSelector} from 'react-redux'
+import { findProducts } from '../../../state/Product/Action'
+import Pagination from '@mui/material/Pagination';
+
 const sortOptions = [
-  { name: 'Price: Low to High', href: '#', current: false },
-  { name: 'Price: High to Low', href: '#', current: false },
+  { type:'inc', name: 'Price: Low to High', href: '#', current: false },
+  { type:'dec', name: 'Price: High to Low', href: '#', current: false },
 ]
 
 const filters = [
@@ -55,14 +59,14 @@ const singleFilters = [
         id: 'Discount',
         name: 'Discount Range',
         options: [
-          { value: '10%-And-Above', label: '10% And Above', checked: false },
-          { value: '20%-And-Above', label: '20% And Above', checked: false },
-          { value: '30%-And-Above', label: '30% And Above', checked: false },
-          { value: '40%-And-Above', label: '40% And Above', checked: false },
-          { value: '50%-And-Above', label: '50% And Above', checked: false },
-          { value: '60%-And-Above', label: '60% And Above', checked: false },
-          { value: '70%-And-Above', label: '70% And Above', checked: false },
-          { value: '80%-And-Above', label: '80% And Above', checked: false },
+          { value: 10, label: '10% And Above', checked: false },
+          { value: 20, label: '20% And Above', checked: false },
+          { value: 30, label: '30% And Above', checked: false },
+          { value: 40, label: '40% And Above', checked: false },
+          { value: 50, label: '50% And Above', checked: false },
+          { value: 60, label: '60% And Above', checked: false },
+          { value: 70, label: '70% And Above', checked: false },
+          { value: 80, label: '80% And Above', checked: false },
         ],
       },
       {
@@ -76,6 +80,7 @@ const singleFilters = [
       },
 ]
 
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
@@ -85,12 +90,65 @@ export default function Product() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const navigate = useNavigate();
   const location = useLocation()
+  const params = useParams()
+  const dispatch = useDispatch()
+
+  const {product} = useSelector(store=>store) 
+
+ const decodedQueryString = decodeURIComponent(location.search)
+ let searchParams = new URLSearchParams(decodedQueryString)
+ let colorValue = searchParams.get('color')
+ let sizeValue = searchParams.get('size')
+ let priceValue = searchParams.get('Price')
+ let discount = searchParams.get('Discount')
+ let sortValue = searchParams.get('sort')
+ let pageNumber = searchParams.get('page') || 1
+ let stock = searchParams.get('Availability')
+//  console.log('colors through params : ', colorValue)
+
+const handlePaginationChange = (e, value) =>{
+  const searchParams = new URLSearchParams(location.search)
+  searchParams.set('page', value)
+  navigate(`?${searchParams.toString()}`)
+  
+}
+
+ useEffect(()=>{
+  const [minPrice, maxPrice] = priceValue === null ? [0, 10000]: priceValue.split('-').map( Number)  // (price) => parseInt(price)
+  // console.log('use effect called in product')
+  const data = {
+     colors : colorValue || "",
+     sizes: sizeValue || "",
+     minPrice: minPrice,
+     maxPrice: maxPrice, 
+     minDiscount : discount || "", 
+     category: params.levelThree, 
+     stock: stock || "", 
+     sort: sortValue || "", 
+     pageNumber, 
+     pageSize: 3
+  }
+  // console.log(' in product.jsx data got from params : ', data)
+  dispatch(findProducts(data))
+  // console.log("in product.jsx " , product.products)
+ },[
+  params.levelThree,
+  colorValue,
+  sizeValue,
+  priceValue,
+  discount,
+  sortValue,
+  pageNumber,
+  stock
+ ])
+
+  
 
   const handleFilters = (value, sectionId) =>{
     const searchParams = new URLSearchParams(location.search);
-    let filterValue = searchParams.getAll(sectionId)
+    let filterValue = searchParams.getAll(sectionId)  // filterValue = ["red_blue_pink_yellow",] 
     // console.log(filterValue);   //  this is array contains a string and onwards you will be spliting it to modify it
-    if(filterValue.length > 0 && filterValue[0].split("_").includes(value)){
+    if(filterValue.length > 0 && filterValue[0].split("_").includes(value)){  
       filterValue = filterValue[0].split("_").filter((item) =>  item !== value)
       if(filterValue.length === 0 ) {
         searchParams.delete(sectionId);
@@ -112,14 +170,19 @@ export default function Product() {
     const query = searchParams.toString();
 
       navigate({search:`?${query}`})
-    
+  }
 
-    
+  const handleSort= (type) =>{
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set("sort", type);
+    const query = searchParams.toString();
+
+      navigate({search:`?${query}`})
   }
   return (
     <div className="bg-white">
       <div>
-        {/* Mobile filter dialog */}
+        {/* for mobile view , Mobile filter dialog */}
         <Transition.Root show={mobileFiltersOpen} as={Fragment}>
           <Dialog as="div" className="relative z-40 lg:hidden" onClose={setMobileFiltersOpen}>
             <Transition.Child
@@ -217,6 +280,7 @@ export default function Product() {
             <div className="flex items-center">
               <Menu as="div" className="relative inline-block text-left">
                 <div>
+                {/* sort button  */}
                   <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
                     Sort
                     <ChevronDownIcon
@@ -235,13 +299,14 @@ export default function Product() {
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
+                 {/* // for sorting  with price hight to low or other */}
                   <Menu.Items className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="py-1">
                       {sortOptions.map((option) => (
                         <Menu.Item key={option.name}>
                           {({ active }) => (
-                            <a
-                              href={option.href}
+                            <button
+                              onClick={()=>handleSort(`${option.type}`)}
                               className={classNames(
                                 option.current ? 'font-medium text-gray-900' : 'text-gray-500',
                                 active ? 'bg-gray-100' : '',
@@ -249,7 +314,7 @@ export default function Product() {
                               )}
                             >
                               {option.name}
-                            </a>
+                            </button>
                           )}
                         </Menu.Item>
                       ))}
@@ -279,15 +344,19 @@ export default function Product() {
             </h2>
 
             <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-5">
-              {/* Filters */}
-              <div>
+              
+              <div> 
+              {/* filter icon  */}
               <div className='flex items-center justify-between my-5'>
                 <h1 className='text-lg opacity-50 font-bold'>Filters</h1>
                 <FilterListIcon/>
               </div>
+
+              {/* Filters */}
               <form className="hidden lg:block">
                 
-
+                 {/* here actual filters are listed  */}
+                {/* in this kind of filter multiple option can be tick eg color= blue, red, green  */}
                 {filters.map((section) => (
                   <Disclosure as="div" key={section.id} className="border-b border-gray-200 py-6">
                     {({ open }) => (
@@ -331,6 +400,7 @@ export default function Product() {
                     )}
                   </Disclosure>
                 ))}
+                {/* having only radio button ie one option can be tick eg Availability */}
                 {singleFilters.map((section) => (
                   <Disclosure as="div" key={section.id} className="border-b border-gray-200 py-6">
                     {({ open }) => (
@@ -378,16 +448,20 @@ export default function Product() {
               </div>
               
 
-              {/* Product grid */}
+              {/* Product grid  here all product are listed*/}
               <div className="lg:col-span-4 w-full">
                 <div className='flex flex-wrap justify-center bg-white py-5'>
-                    {
-                    Mens_kurta.map((item) => <ProductCard product = {item} />)
+                {
+                    product.products?.content?.map((item) => <ProductCard product = {item} />)
+                    
                 }
                 </div>
                 
               </div>
             </div>
+          </section>
+          <section style={{width:'100%', display:'flex', justifyContent:'center'}}>
+          <Pagination count={product.products.totalPages} color="primary" onChange={handlePaginationChange}  />
           </section>
         </main>
       </div>

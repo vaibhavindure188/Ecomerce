@@ -45,6 +45,9 @@ const UserSchema = mongoose.Schema({
     createdAt:{
         type:Date,
         default:Date.now()
+    },
+    passward:{
+        type:String
     }
 
 })

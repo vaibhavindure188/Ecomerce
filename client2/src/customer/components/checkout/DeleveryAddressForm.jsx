@@ -2,6 +2,8 @@ import { Box, Button, Grid, TextField } from '@mui/material'
 import React, { useState } from 'react'
 import AddressCard from '../addressCard/AddressCard'
 import { useNavigate } from 'react-router-dom' 
+import { useDispatch, useSelector } from 'react-redux'
+import { createOrder } from '../../../state/Order/Action'
 function DeleveryAddressForm() {
     const [name, setName] = useState("")
     const [last, setLast] = useState("")
@@ -13,22 +15,24 @@ function DeleveryAddressForm() {
 
     const [adds,setAdds] = useState([]);
     const navigate = useNavigate();
+    const {order}  = useSelector(store=>store)
     const handleSubmit = (e) =>{
         e.preventDefault();
         const data = new FormData(e.currentTarget);
 
         const address = {
-            name:data.get('firstName'),
+            firstName:data.get('firstName'),
             lastName : data.get('lastName'),
             city : data.get('city'),
             state: data.get('state'),
-            zip : data.get('zip'),
-            phonNumber : data.get('phoneNumber'),
+            zipCode : data.get('zip'),
+            mobile : data.get('phoneNumber'),
             address: data.get('address')
         }
-        console.log(address)
+        dispatch(createOrder(address));
+        // console.log(address)
         setAdds((pre) => [address,...pre]);
-        console.log('address :', adds);
+    
         setMob("")
         setAdd('')
         setCity('')
@@ -36,12 +40,11 @@ function DeleveryAddressForm() {
         setZip('')
         setState('')
         setName('')
-
+        navigate(`/checkout/${3}`);
     }
-
-    const handleClick = () =>{
-        navigate(`/checkout?step=3`);
-    }
+    const dispatch = useDispatch()
+    
+    // useEffect(()=>{},[])
   return (
     <div className='mx-20'>
       <Grid sx={{mt:2}} container spacing={4}  className="">
@@ -49,9 +52,9 @@ function DeleveryAddressForm() {
             <div className='p-5 py-7 border-b cursor-pointer'>
                 
                 {
-                    adds.map((item)=><AddressCard item= {item}/> )
+                    <AddressCard item= {order.shippingAddress}/> 
                 }
-                <Button onClick={()=>handleClick()} variant="contained" color="primary" size='large' sx={{mt:2, bgcolor:'indigo',marginBottom:1}}>Use this address</Button>
+                
                
             </div>
         </Grid>

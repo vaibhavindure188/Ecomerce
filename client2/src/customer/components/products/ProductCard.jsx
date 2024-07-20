@@ -1,11 +1,16 @@
 import React from 'react'
 import './ProductCardCss.css'
 import { useNavigate } from 'react-router-dom'
+import { findProductById } from '../../../state/Product/Action'
+import { useDispatch } from 'react-redux'
 function ProductCard({product}) {
   const navigate = useNavigate()
-  
+  const dispatch = useDispatch()
+
   const handleClick = (product)=>{
-    navigate(`/product/${5}`)
+    // const data = {productId : product._id}
+    // dispatch(findProductById(data));
+    navigate(`/product/${product._id}`)
   }
   return (
     <div onClick={()=>handleClick(product)} className='productCard w-[15rem] m-3 transition-all cursor-pointer object-cover object-left-top'>

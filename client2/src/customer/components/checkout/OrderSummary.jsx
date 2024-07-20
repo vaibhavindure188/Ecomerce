@@ -1,9 +1,14 @@
 import React from 'react'
 import AddressCard from '../addressCard/AddressCard'
 import CartItem from '../cart/CartItem'
-
+import { useSelector } from 'react-redux'
+import axios from 'axios'
+import { api } from '../../../config/apiConfig.js'
 const OrderSummary = () => {
-    const address = {
+  const {order} = useSelector(store=>store)
+  const orders = order.order?.orderItems;
+  console.log(orders)
+    let address = {
         name:"vaibhav",
         lastName : "indure",
         city : "pune",
@@ -11,6 +16,18 @@ const OrderSummary = () => {
         zip : "411035",
         phonNumber : "9393827393",
         address: "akurdi pune"
+    }
+    if(order?.shippingAddress != null)
+    address = order?.shippingAddress;
+    console.log('in orderSummery address = ',order?.shippingAddress)
+    console.log('in orderSUmmery : order = ', order.order)
+
+   
+    const handlePaymentClick = async()=>{
+      const {data} = await api.get(`http://localhost:5454/api/payment/${order.order?._id}`)
+      console.log('we reached at below get payemnt url')
+      console.log(data.payment_link_url)
+      window.location.href = data.payment_link_url;
     }
   return (
     <div>
@@ -23,7 +40,7 @@ const OrderSummary = () => {
       <div className=' col-span-2'>
       
       {
-        [1,2,3,4].map((item) =><CartItem /> )
+        orders?.map((item) =><CartItem item={item} /> )
       }
 
       </div>
@@ -37,12 +54,12 @@ const OrderSummary = () => {
         <div className='space-y-1 text-lg px-4 font-semibold'>
           <div className='flex justify-between text-gray-500'>
             <span>Price</span>
-            <span>₹ 220</span>
+            <span>₹ {order.order?.paymentDetails?.totalPrice}</span>
           </div>
 
           <div className='flex justify-between'>
             <span>Discount</span>
-            <span>- ₹ 90</span>
+            <span>- ₹ {order.order?.paymentDetails?.discount}</span>
           </div>
 
           <div className='flex justify-between text-sky-700'>
@@ -52,10 +69,10 @@ const OrderSummary = () => {
           <hr/>
           <div className='flex justify-between text-green-600 font-semibold '>
             <span>Total Ammount</span>
-            <span className='text-xl'>₹ 130</span>
+            <span className='text-xl'>₹ {order.order?.paymentDetails?.totalDiscountedPrice    }</span>
           </div>
         </div>
-        <button className='ml-4 text-bold text-white h-10 rounded-lg w-[10rem] bg-green-800 mt-7 hover:bg-blue-700 items-center'>Payment</button>
+        <button onClick={handlePaymentClick} className='ml-4 text-bold text-white h-10 rounded-lg w-[10rem] bg-green-800 mt-7 hover:bg-blue-700 items-center'>Payment</button>
 
       </div>
       

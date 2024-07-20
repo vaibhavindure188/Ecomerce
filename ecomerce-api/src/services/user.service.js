@@ -1,13 +1,13 @@
-const User = require("../models/user.module");
+const User = require("../models/user.module.js");
 const bcrypt = require("bcrypt");
 const jwtProvider = require("../config/jwtProvider.js");
 
 
 const createUser = async(userData) => {
   try {
-    const { firstName, lastName, email, passward } = userData;
-
-    const isUserExists =  User.findOne({email:email});
+    const { firstName, lastName, email } = userData;
+    let passward = userData.password;
+    const isUserExists = await User.findOne({email:email});
     if (isUserExists) {
       throw new Error("user is already present with email:" + email);
     }
@@ -21,7 +21,8 @@ const createUser = async(userData) => {
 
 const getUserByUserId = async (userId) => {
   try {
-    const user = await User.findById(userId).populate("address");
+    const user = await User.findById(userId)
+    // .populate("address");
     if (!user) {
       throw new Error("No user found with id", userId);
     }
@@ -46,6 +47,7 @@ const getUserByEmail = async (email) => {
 const getUserProfileByToken = async (token) => {
   try {
     const userId = jwtProvider.getUserIdFromToken(token);
+    // console.log(userId);
     const user = await getUserByUserId(userId);
     if (!user) {
       throw new Error("User not found with user id ", userId);
@@ -58,7 +60,7 @@ const getUserProfileByToken = async (token) => {
 
 const getUsers = async () => {
   try {
-    const users = await User.find();
+    const users = await User.find(); 
     return users;
   } catch (e) {
     throw new Error(e.message);

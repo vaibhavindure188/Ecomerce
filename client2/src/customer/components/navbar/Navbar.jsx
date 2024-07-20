@@ -1,6 +1,6 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Dialog, Popover, Tab, Transition } from "@headlessui/react";
-import {Button} from "@mui/material";
+import {Button, Hidden} from "@mui/material";
 import {
   Bars3Icon,
   MagnifyingGlassIcon,
@@ -9,6 +9,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { Avatar, Menu, MenuItem } from "@mui/material";
+import AuthModel from "../../../Auth/AuthModel";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../../state/Auth/Action";
 const navigation = {
   categories: [
     {
@@ -143,25 +146,53 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+// the component starst from here
 export default function Navbar() {
+  const {cart} = useSelector(store=>store)
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const [open1, setOpen] = useState(false);
   const navigate = useNavigate();
-
+  const {auth} = useSelector(store=>store)
+  const dispatch = useDispatch()
   const handleClickAvtar = (event) => {
     setAnchorEl(event.currentTarget);
   };
+  let cartItems
+  useEffect(()=>{
+    // location.reload()
+  },[cart?.cart?.cartItems?.length])
 
   const handleClose = () => {
     setAnchorEl(null);
+
   };
+  const handleLogout = () =>{
+    dispatch(logout());
+    setAnchorEl(null);
+  }
   const handleClick = (category, section, item, close) => {
     navigate(`/${category.id}/${section.id}/${item.name}`);
     close();
   };
+
+  // to handle  click signin 
+  const [openSignin, setOpenSignin] = useState(false)
+  const jwt = localStorage.getItem('jwt');
+  const handleClickSignin = () =>{
+    setOpenSignin(true);
+  }
+
+  const handleCartClick = () =>{
+    navigate('/cart')
+  }
+  useEffect(()=>{
+    setOpenSignin(false);
+    // console.log(auth)
+  },[jwt])
   return (
     <div className="bg-white ">
+
       {/* Mobile menu */}
       <Transition.Root show={open1} as={Fragment}>
         <Dialog as="div" className="relative z-40 lg:hidden" onClose={setOpen}>
@@ -300,24 +331,28 @@ export default function Navbar() {
                   ))}
                 </div>
 
-                <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-                  <div className="flow-root">
-                    <a
-                      href="#"
-                      className="-m-2 block p-2 font-medium text-gray-900"
-                    >
-                      Sign in
-                    </a>
-                  </div>
-                  <div className="flow-root">
-                    <a
-                      href="#"
-                      className="-m-2 block p-2 font-medium text-gray-900"
-                    >
-                      Create account
-                    </a>
-                  </div>
+              {!jwt && <div className="space-y-6 border-t border-gray-200 px-4 py-6">
+                <div className="flow-root">
+                  <a
+                    style={{cursor:'pointer'}} onClick={()=>navigate('/login')}
+                    className="-m-2 block p-2 font-medium text-gray-900"
+                  >
+                    Sign in
+                  </a>
                 </div>
+                <div className="flow-root">
+                  <a
+                    style={{cursor:'pointer'}} onClick={()=>navigate('/register')}
+                    className="-m-2 block p-2 font-medium text-gray-900"
+                  >
+                    Create account
+                  </a>
+                </div>
+              </div>}
+
+              {
+                jwt && <div className="space-y-6 border-t border-gray-200 px-3">user name: {auth.user?.firstName}</div>
+              }
 
                 <div className="border-t border-gray-200 px-4 py-6">
                   <a href="#" className="-m-2 flex items-center p-2">
@@ -339,6 +374,8 @@ export default function Navbar() {
       </Transition.Root>
 
       <header className="relative bg-white">
+
+        {/* top line for any special offer(above navbar) */}
         <p className="flex h-10 items-center justify-center bg-indigo-600 px-4 text-sm font-medium text-white sm:px-6 lg:px-8">
           Get free delivery on orders over $100
         </p>
@@ -346,6 +383,8 @@ export default function Navbar() {
         <nav aria-label="Top" className="mx-auto ">
           <div className="border-b border-gray-200">
             <div className="flex h-16 items-center px-11">
+
+             {/* menu button when screen is small  */}
               <button
                 type="button"
                 className=" rounded-md bg-white p-2 text-gray-400 lg:hidden"
@@ -368,7 +407,7 @@ export default function Navbar() {
               </div>
               <p className="px-4 cursor-pointer" onClick={()=>navigate('/')}>Home</p>
 
-              {/* Flyout menus */}
+              {/* Flyout menus  showing the nav items list */}
               <Popover.Group className="hidden lg:ml-8 lg:block lg:self-stretch z-10">
                 <div className="flex h-full space-x-8">
                   {navigation.categories.map((category) => (
@@ -498,40 +537,24 @@ export default function Navbar() {
                   ))}
                 </div>
               </Popover.Group>
-
+                
               <div className="ml-auto flex items-center">
+              {/* sign in button  */}
+              { 
+                
+                !jwt &&
                 <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
-                  <a
-                    href="#"
+                  <button
+                    onClick={handleClickSignin}
                     className="text-sm font-medium text-gray-700 hover:text-gray-800"
                   >
                     Sign in
-                  </a>
+                  </button>
                   <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
-                  <a
-                    href="#"
-                    className="text-sm font-medium text-gray-700 hover:text-gray-800"
-                  >
-                    Create account
-                  </a>
-                </div>
+                  </div>
+              }
 
-                <div className="hidden lg:ml-8 lg:flex">
-                  <a
-                    href="#"
-                    className="flex items-center text-gray-700 hover:text-gray-800"
-                  >
-                    <img
-                      src="https://tailwindui.com/img/flags/flag-canada.svg"
-                      alt=""
-                      className="block h-auto w-5 flex-shrink-0"
-                    />
-                    <span className="ml-3 block text-sm font-medium">CAD</span>
-                    <span className="sr-only">, change currency</span>
-                  </a>
-                </div>
                 {/* avatar after you logged in */}
-
                 <div>
                   <Button
                     id="demo-positioned-button"
@@ -540,7 +563,7 @@ export default function Navbar() {
                     aria-expanded={open ? "true" : undefined}
                     onClick={handleClickAvtar}
                   >
-                    <Avatar
+                    {jwt && <Avatar
                       sx={{
                         color: "red",
                         bgcolor: "indigo",
@@ -548,8 +571,8 @@ export default function Navbar() {
                         cursor: "pointer",
                       }}
                     >
-                      V
-                    </Avatar>
+                      {auth.user?.firstName[0] } 
+                    </Avatar>}
                   </Button>
                   <Menu
                     id="demo-positioned-menu"
@@ -569,7 +592,7 @@ export default function Navbar() {
                   >
                     <MenuItem onClick={handleClose}>Profile</MenuItem>
                     <MenuItem onClick={()=>navigate('product/order')}>My Orders</MenuItem>
-                    <MenuItem onClick={handleClose}>Logout</MenuItem>
+                    <MenuItem onClick={handleLogout}>Logout</MenuItem>
                   </Menu>
                 </div>
 
@@ -588,11 +611,12 @@ export default function Navbar() {
                 <div className="ml-4 flow-root lg:ml-6">
                   <a href="#" className="group -m-2 flex items-center p-2">
                     <ShoppingBagIcon
+                      onClick={handleCartClick}
                       className="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
                       aria-hidden="true"
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">
-                      0
+                      {cart?.cart?.cartItems?.length || 0}
                     </span>
                     <span className="sr-only">items in cart, view bag</span>
                   </a>
@@ -602,6 +626,8 @@ export default function Navbar() {
           </div>
         </nav>
       </header>
+
+      <AuthModel handleClose={handleClickSignin} open={openSignin} setOpen={setOpenSignin}/>
     </div>
   );
 }

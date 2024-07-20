@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { StarIcon } from '@heroicons/react/20/solid'
 import { RadioGroup } from '@headlessui/react'
 import { Box, Grid, Grow, LinearProgress, Rating } from '@mui/material'
@@ -7,9 +7,13 @@ import { Button } from '@mui/base'
 import ProductReviewCard from './ProductReviewCard'
 import Mens_kurta from '../homeSectionCorousel/Data'
 import HomeSectionCard from '../homeSectionCorousel/HomeSectionCard'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { findProductById } from '../../../state/Product/Action'
+import { addItemToCart } from '../../../state/Cart/Action'
 
-const product = {
+
+const product1 = {
   name: 'Basic Tee 6-Pack',
   price: '$192',
   href: '#',
@@ -66,15 +70,35 @@ function classNames(...classes) {
 }
 
 export default function ProductDetails() {
-  const [selectedColor, setSelectedColor] = useState(product.colors[0])
-  const [selectedSize, setSelectedSize] = useState(product.sizes[2])
+  const params = useParams()
+  // console.log(productId)   // here it comes correctly
+  const dispatch = useDispatch()
+
+  const [selectedColor, setSelectedColor] = useState(product1.colors[0])
+  const [selectedSize, setSelectedSize] = useState()
   const navigate = useNavigate();
+
+  const handleAddToCart = () =>{
+    dispatch(addItemToCart({productId: params.productId,size : 'M'}))
+    navigate('/cart')
+  }
+  useEffect(()=>{
+    const data = {productId : params.productId}
+    dispatch(findProductById(data));
+    window.scrollTo(0, 0);
+  },[params.productId])
+
+  const {product} = useSelector(store=>store)
+  // const product = product.product;
+  const item = product.product;
+  // item = item?.data
+  // console.log(item)
   return (
     <div className="bg-white">
       <div className="pt-6">
         <nav aria-label="Breadcrumb">
           <ol role="list" className="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-            {product.breadcrumbs.map((breadcrumb) => (
+            {/* {item?.breadcrumbs?.map((breadcrumb) => (
               <li key={breadcrumb.id}>
                 <div className="flex items-center">
                   <a href={breadcrumb.href} className="mr-2 text-sm font-medium text-gray-900">
@@ -92,10 +116,10 @@ export default function ProductDetails() {
                   </svg>
                 </div>
               </li>
-            ))}
+            ))} */}
             <li className="text-sm">
-              <a href={product.href} aria-current="page" className="font-medium text-gray-500 hover:text-gray-600">
-                {product.name}
+              <a href={item?.href} aria-current="page" className="font-medium text-gray-500 hover:text-gray-600">
+                {item?.title}
               </a>
             </li>
           </ol>
@@ -106,41 +130,41 @@ export default function ProductDetails() {
         <div className="flex flex-col items-center ">
           <div className="overflow-hidden rounded-lg max-w-[30rem] max-h-[35rem]">
             <img
-              src={product.images[0].src}
-              alt={product.images[0].alt}
+              src={item?.imageUrl}
+              alt={ 'image'}
               className="h-full w-full object-cover object-center"
             />
           </div>
-          <div className="flex flex-wrap  gap-x-5 mt-5">
+          {/* <div className="flex flex-wrap  gap-x-5 mt-5">
             <div className="max-w-[8rem]  max-h-[8rem]  overflow-hidden rounded-lg">
               <img
-                src={product.images[1].src}
-                alt={product.images[1].alt}
+                src={item?.images[1].src}
+                alt={item?.images[1].alt}
                 className="h-full w-full object-cover object-center"
               />
             </div>
             <div className="max-w-[8rem]  max-h-[8rem]aspect-h-2  overflow-hidden rounded-lg">
               <img
-                src={product.images[2].src}
-                alt={product.images[2].alt}
+                src={item?.images[2].src}
+                alt={item?.images[2].alt}
                 className="h-full w-full object-cover object-center"
               />
             </div>
             <div className="max-w-[8rem]  max-h-[8rem]  lg:aspect-h-4 lg:aspect-w-3 sm:overflow-hidden sm:rounded-lg">
             <img
-              src={product.images[3].src}
-              alt={product.images[3].alt}
+              src={item?.images[3].src}
+              alt={item?.images[3].alt}
               className="h-full w-full object-cover object-center"
             />
           </div>
-          </div>
+          </div> */}
           
         </div>
 
-        {/* Product info */}
+        {/* item info */}
         <div className="lg:col-span-1 lg:max-w-7xl lg:pr-8 lg:pb-24 ">
           <div className="lg:col-span-1 ">
-            <h1 className="text-lg font-semibold  text-gray-900 sm:text-3xl">{product.name} brand</h1>
+            <h1 className="text-lg font-semibold  text-gray-900 sm:text-3xl"> brand</h1>
             <h1 className='text-lg opacity-60 text-gray-900 sm:text-2xl'>discription of title </h1>
           </div>
 
@@ -178,7 +202,7 @@ export default function ProductDetails() {
                   <RadioGroup.Label className="sr-only">Choose a size</RadioGroup.Label>
                   <div className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4 px-10
                   ">
-                    {product.sizes.map((size) => (
+                    {item?.sizes?.map((size) => (
                       <RadioGroup.Option
                         key={size.name}
                         value={size}
@@ -228,7 +252,7 @@ export default function ProductDetails() {
                 </RadioGroup>
               </div>
 
-              <button onClick={()=>navigate('/cart')} className='text-bold text-white h-10 rounded-lg w-[10rem] bg-green-800 mt-7 hover:bg-blue-700'>Add to Cart</button>
+              <button onClick={handleAddToCart} className='text-bold text-white h-10 rounded-lg w-[10rem] bg-green-800 mt-7 hover:bg-blue-700'>Add to Cart</button>
             </form>
           </div>
 
@@ -238,29 +262,29 @@ export default function ProductDetails() {
               <h3 className="sr-only">Description</h3>
 
               <div className="space-y-6">
-                <p className="text-base text-gray-900">{product.description}</p>
+                <p className="text-base text-gray-900">{item?.description}</p>
               </div>
             </div>
 
             <div className="mt-10">
               <h3 className="text-sm font-medium text-gray-900">Highlights</h3>
 
-              <div className="mt-4">
+              {/* <div className="mt-4">
                 <ul role="list" className="list-disc space-y-2 pl-4 text-sm">
-                  {product.highlights.map((highlight) => (
+                  {item.highlights.map((highlight) => (
                     <li key={highlight} className="text-gray-400">
                       <span className="text-gray-600">{highlight}</span>
                     </li>
                   ))}
                 </ul>
-              </div>
+              </div> */}
             </div>
 
             <div className="mt-10">
               <h2 className="text-sm font-medium text-gray-900">Details</h2>
 
               <div className="mt-4 space-y-6">
-                <p className="text-sm text-gray-600">{product.details}</p>
+                <p className="text-sm text-gray-600">{item?.description}</p>
               </div>
             </div>
           </div>
@@ -356,11 +380,12 @@ export default function ProductDetails() {
             <h1 className='font-semibold text-lg'>Similar Products</h1>
             <div className='flex flex-wrap items-center py-10'>
               {
-                Mens_kurta.slice(0,20).map((item)=> <HomeSectionCard item={item}/>)
+                product.products?.content?.slice(0,20).map((item)=> <HomeSectionCard item={item}/>)
               }
             </div>
         </section>
       </div>
     </div>
+    
   )
 }

@@ -1,8 +1,10 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function HomeSectionCard({item}) {
+  const navigate = useNavigate()
   return (
-    <div className='flex flex-col cursor-pointer items-center bg-white rounded-lg shadow-lg overflow-hidden mx-3 w-[15rem]'>
+    <div className='flex flex-col cursor-pointer items-center bg-white rounded-lg shadow-lg overflow-hidden mx-3 w-[15rem]' onClick={()=>navigate(`/product/${item._id}`)}>
       <div className='h-[13rem] w-[10rem]' >
         <img src={item.imageUrl}  alt="card"  className='object-cover object-top w-full h-full'/>
       </div>

@@ -5,7 +5,7 @@ import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import DeleveryAddressForm from "./DeleveryAddressForm";
 import OrderSummary from "./OrderSummary";
 
@@ -14,8 +14,9 @@ const steps = ["Login", "Delivery address", "Order Summery", "Payment"];
 export default function CheckOut() {
   const [activeStep, setActiveStep] = React.useState(1);
   const location = useLocation();
-  const querySearch = new URLSearchParams(location.search);
-  const step = querySearch.get("step");
+  // const querySearch = new URLSearchParams(location.search);
+  // const step = querySearch.get("step");
+  const params = useParams()
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -30,7 +31,7 @@ export default function CheckOut() {
   return (
     <div className="p-10">
       <Box sx={{ width: "100%" ,marginX:5, paddingRight:4}}>
-        <Stepper activeStep={step}>
+        <Stepper activeStep={params.id == 1 ? 2:3}>
           {steps.map((label, index) => {
             const stepProps = {};
             const labelProps = {};
@@ -55,7 +56,7 @@ export default function CheckOut() {
 
             <div>
                 {
-                    step == 2 ? <DeleveryAddressForm/> : <OrderSummary/>
+                    params.id == 1 ? <DeleveryAddressForm/> : <OrderSummary/>
                 }
             </div>
           </React.Fragment>
